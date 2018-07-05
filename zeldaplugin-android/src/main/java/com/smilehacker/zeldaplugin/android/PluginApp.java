@@ -1,4 +1,4 @@
-package com.smilehacker.zeldaplugin.provider;
+package com.smilehacker.zeldaplugin.android;
 
 import android.app.Application;
 

@@ -16,20 +16,25 @@ object Zelda : IPluginAction {
      */
     private const val DEFAULT_SCHEME = "app"
 
-    private val mPlugins = HashMap<String, PluginProvider>() // not use ArrayMap because of it need support lib
+    private var mPlugins : MutableMap<String, Plugin> = HashMap() // not use ArrayMap because of it need support lib
 
-    fun load(pluginName: String) {
+    @Synchronized
+    fun load(pluginName: String) : Plugin? {
+        var plugin = mPlugins[pluginName]
+        if (plugin != null) {
+            return plugin
+        }
         try {
             val clazz = Class.forName("com.smilehacker.zeldaplugin.provider.plugins.ZPlugin_$pluginName")
             val factory = clazz.newInstance() as IProviderFactory
-            val plugin = factory.getPluginProviderClass().newInstance() as PluginProvider
-            if (mPlugins[factory.getPluginName()] == null) {
-                plugin.initialize()
-            }
-            mPlugins[factory.getPluginName()] = plugin
+            plugin = factory.getPluginProviderClass().newInstance() as Plugin
+            plugin.initialize()
+            saveLoadedPlugin(factory.getPluginName(), plugin)
         } catch (e: Throwable) {
             Log.e("Zelda", "load error", e)
         }
+
+        return plugin
     }
 
     override fun query(uri: Uri, vararg params: Any?): Any? {
@@ -42,5 +47,13 @@ object Zelda : IPluginAction {
         var fixedPath = "$moduleName/$path".replace("//", "/")
         val uri = Uri.parse("$DEFAULT_SCHEME://$fixedPath")
         return query(uri, *params)
+    }
+
+    private fun saveLoadedPlugin(name: String, plugin: Plugin) {
+        // plugin不会的太多 所以用copy的方式可以减少多线程安全的消耗
+        val map = HashMap<String, Plugin>(mPlugins.size + 1)
+        map.putAll(mPlugins)
+        map.put(name, plugin)
+        mPlugins = map
     }
 }

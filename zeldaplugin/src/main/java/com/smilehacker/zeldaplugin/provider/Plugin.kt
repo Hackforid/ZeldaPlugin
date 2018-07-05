@@ -5,7 +5,7 @@ import android.net.Uri
 /**
  * Created by quan.zhou on 2017/8/7.
  */
-abstract class PluginProvider : IPluginAction {
+abstract class Plugin : IPluginAction {
 
     /**
      * first init when load
@@ -16,6 +16,18 @@ abstract class PluginProvider : IPluginAction {
      * lazy init when first call
      */
     abstract fun lazyInitialize()
+
+    open fun <T> getService(clazz: Class<T>): T? {
+        if (!mIsLazyInitialized) {
+            synchronized(this) {
+                if (!mIsLazyInitialized) {
+                    lazyInitialize()
+                    mIsLazyInitialized = true
+                }
+            }
+        }
+       return null
+    }
 
     private var mIsLazyInitialized = false
 
@@ -30,6 +42,4 @@ abstract class PluginProvider : IPluginAction {
         }
         return query(uri, *params)
     }
-
-    protected val context = PluginApp.INSTANCE
 }
