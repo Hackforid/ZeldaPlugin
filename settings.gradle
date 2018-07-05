@@ -1,0 +1,5 @@
+include ':app'
+
+include ':zeldaplugin-annotation'
+include ':zeldaplugin-compiler'
+include ':zeldaplugin'
