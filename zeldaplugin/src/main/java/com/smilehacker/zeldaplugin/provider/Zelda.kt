@@ -29,7 +29,7 @@ object Zelda : IPluginAction {
             val factory = clazz.newInstance() as IProviderFactory
             plugin = factory.getPluginProviderClass().newInstance() as Plugin
             plugin.initialize()
-            saveLoadedPlugin(factory.getPluginName(), plugin)
+            saveLoadedPlugin(pluginName, plugin)
         } catch (e: Throwable) {
             Log.e("Zelda", "load error", e)
         }
